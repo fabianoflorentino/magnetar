@@ -1,0 +1,21 @@
+# Binários
+bin/
+magnetar
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+vendor/
+coverage.out
+
+# Skills CLI: duplicatas por agente (fonte universal em .agents/skills;
+# "agent/" também quebra o go test ./... por conter exemplos .go)
+agent/
