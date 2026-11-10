@@ -1,0 +1,10 @@
+# Codecov gate policy: sentinel the declared target, tolerate small drift.
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 2%
+    patch:
+      default:
+        target: 80%

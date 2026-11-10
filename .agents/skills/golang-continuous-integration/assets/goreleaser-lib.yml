@@ -1,0 +1,11 @@
+version: 2
+
+# Minimal config for a library: nothing to build — just a release, a checksum of
+# the tree, and a changelog. Often `gh release create` alone is enough.
+builds:
+  - skip: true
+
+changelog:
+  sort: asc
+  filters:
+    exclude: ["^docs:", "^test:", "^ci:", "^chore:"]

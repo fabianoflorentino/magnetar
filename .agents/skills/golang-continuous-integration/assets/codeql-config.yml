@@ -1,0 +1,10 @@
+name: "CodeQL config"
+
+# Broader suite: security plus maintainability and reliability queries.
+queries:
+  - uses: security-and-quality
+
+# The unused-result check is noisy for idiomatic Go (e.g. fmt.Fprintf); drop it.
+query-filters:
+  - exclude:
+      id: go/unused-result

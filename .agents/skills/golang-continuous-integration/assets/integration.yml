@@ -1,0 +1,57 @@
+name: Integration Tests
+
+# Run against the default branch and every pull request.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Integration tests make no repository writes.
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+
+    # Ephemeral service containers the tests connect to over localhost.
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Go toolchain
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+
+      # -count=1 defeats test caching, which would otherwise hide flaky services.
+      - name: Exercise service-dependent tests
+        run: go test -v -race -tags=integration -count=1 ./...
+        env:
+          DATABASE_URL: postgres://test:test@localhost:5432/testdb?sslmode=disable
+          REDIS_URL: redis://localhost:6379

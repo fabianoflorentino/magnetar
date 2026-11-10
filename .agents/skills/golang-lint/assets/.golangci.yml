@@ -1,0 +1,72 @@
+# Starter baseline for this skill — adjust to your project. Linters are
+# grouped by intent as described in golang-lint/SKILL.md (correctness, style,
+# complexity, concurrency, performance, security). This file follows the
+# golangci-lint v2 schema.
+version: "2"
+
+run:
+  timeout: 5m
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - example.com/yourmodule
+
+linters:
+  enable:
+    # correctness
+    - govet
+    - staticcheck
+    - errcheck
+    - nilerr
+    - ineffassign
+    - unused
+    # style
+    - revive
+    - misspell
+    - predeclared
+    # complexity
+    - gocritic
+    # concurrency
+    - thelper
+    - paralleltest
+    - testifylint
+    # security
+    - gosec
+    - bodyclose
+    - sqlclosecheck
+    # misc
+    - nolintlint
+    - forbidigo
+  settings:
+    nolintlint:
+      require-specific: true
+      require-explanation: true
+    revive:
+      confidence: 0.8
+    testifylint:
+      enable:
+        - assertnil
+        - compares
+        - bool-compare
+        - error-nil
+        - suite-dont-use-pkg
+        - suite-extra-assert-call
+        - expected-actual
+  exclusions:
+    rules:
+      - path: (_test|_bench)\.go$
+        linters:
+          - gosec
+      - path: _mock\.go$
+        linters:
+          - gosec
+          - revive
+    generated: lax
+
+issues:
+  new-from-rev: HEAD~1

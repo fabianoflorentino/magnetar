@@ -1,0 +1,33 @@
+name: Lint
+
+# Trigger on the default branch and on every pull request.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Linting requires no write access to the repository.
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Go toolchain
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+
+      - name: Built-in static analysis
+        run: go vet ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
+          args: --timeout 5m
