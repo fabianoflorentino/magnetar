@@ -1,6 +1,6 @@
 # Binários
 bin/
-magnetar
+/magnetar
 
 # IDE
 .idea/
