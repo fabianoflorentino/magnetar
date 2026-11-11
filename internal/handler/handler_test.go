@@ -145,10 +145,10 @@ func TestExtractHandler(t *testing.T) {
 			wantStatus: http.StatusUnprocessableEntity,
 		},
 		{
-			name:       "section not found",
+			name:       "no magnets found",
 			method:     http.MethodPost,
 			body:       `{"url":"https://apachetorrent.com/pagina/"}`,
-			extract:    stubExtract(nil, scraper.ErrSectionNotFound),
+			extract:    stubExtract(nil, scraper.ErrNoMagnetsFound),
 			validate:   allowAll,
 			wantStatus: http.StatusUnprocessableEntity,
 		},

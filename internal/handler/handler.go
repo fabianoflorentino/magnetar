@@ -49,6 +49,7 @@ func (h *Extract) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req ExtractRequest
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.writeError(w, "corpo da requisição inválido", http.StatusBadRequest)
 		return
@@ -76,7 +77,7 @@ func (h *Extract) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	result, err := h.extract(ctx, rawURL)
 	if err != nil {
 		h.logger.Error("falha ao extrair magnet links", "url", rawURL, "erro", err)
-		if errors.Is(err, scraper.ErrSectionNotFound) {
+		if errors.Is(err, scraper.ErrNoMagnetsFound) {
 			h.writeError(w, err.Error(), http.StatusUnprocessableEntity)
 			return
 		}
