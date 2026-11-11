@@ -26,8 +26,10 @@ func main() {
 	port := getEnv("PORT", "8080")
 	rateLimit := getEnvInt("RATE_LIMIT", 10)
 	allowedOrigins := getEnv("ALLOWED_ORIGINS", "*")
-	allowedHosts := splitList(getEnv("ALLOWED_HOSTS", "apachetorrent.com"))
+	allowedHosts := splitList(getEnv("ALLOWED_HOSTS", "apachetorrents.com,apachetorrent.com"))
 	trustedProxies := splitList(getEnv("TRUSTED_PROXIES", ""))
+
+	scraper.SetRedirectHosts(allowedHosts)
 
 	rl := middleware.NewRateLimiter(
 		rateLimit,

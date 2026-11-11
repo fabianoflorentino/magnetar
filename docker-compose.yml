@@ -7,7 +7,7 @@ services:
       - PORT=8080
       - RATE_LIMIT=10
       - ALLOWED_ORIGINS=*
-      - ALLOWED_HOSTS=apachetorrent.com
+      - ALLOWED_HOSTS=apachetorrents.com,apachetorrent.com
       # Adicione os CIDRs dos seus proxies reversos para honrar X-Forwarded-For:
       # - TRUSTED_PROXIES=10.0.0.0/8,172.16.0.0/12
     restart: unless-stopped
