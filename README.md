@@ -1,10 +1,12 @@
 # magnetar
 
-API SaaS que extrai magnet links de Dual Áudio da [ApacheTorrent](https://apachetorrent.com), com rate limit por IP e proteção contra SSRF. O nome vem do [magnetar](https://en.wikipedia.org/wiki/Magnetar) — estrela de nêutrons com o campo magnético mais intenso do universo.
+API que extrai **todos os magnet links de qualquer página de torrents** — em vez de clicar link por link, você envia a URL e recebe os magnets em JSON, com rate limit por IP e proteção contra SSRF. O nome vem do [magnetar](https://en.wikipedia.org/wiki/Magnetar) — estrela de nêutrons com o campo magnético mais intenso do universo.
 
 ## Resumo
 
-O magnetar recebe a URL de uma página do ApacheTorrent via API e devolve, em JSON, todos os magnet links da seção **versao-dual-audio**, já filtrados por resolução (720p e 1080p). Foi construído em Go com **zero dependências externas** (apenas a biblioteca padrão).
+O magnetar recebe a URL de uma página de torrents via API e devolve, em JSON, todos os magnet links encontrados — em âncoras `magnet:?` ou colados como texto — deduplicados por info hash, com rótulo extraído do texto ao redor e já filtrados por resolução (720p, 1080p e 2160p). A extração é genérica e não depende da estrutura de um site específico. Foi construído em Go com **zero dependências externas** (apenas a biblioteca padrão).
+
+> **Limitação conhecida:** sites protegidos por challenge JavaScript (ex.: Cloudflare "Just a moment...") não podem ser buscados por nenhum cliente HTTP puro — a API retorna 403 com essa indicação. Exemplos atuais: eztvx.to e rargb.to.
 
 ## Como começar
 
@@ -28,7 +30,7 @@ O servidor sobe em `http://localhost:8080`.
 ```bash
 curl -X POST http://localhost:8080/api/extract \
   -H "Content-Type: application/json" \
-  -d '{"url":"https://apachetorrent.com/filme-exemplo/"}'
+  -d '{"url":"https://apachetorrents.com/filme-exemplo/"}'
 ```
 
 Resposta:
@@ -37,16 +39,17 @@ Resposta:
 {
   "total": 2,
   "links": [
-    { "label": "Dual Audio 720p", "magnet": "magnet:?xt=urn:btih:..." },
-    { "label": "Dual Audio 1080p", "magnet": "magnet:?xt=urn:btih:..." }
+    { "label": "DOWNLOAD TORRENT DUBLADO DUAL AUDIO 5.1 MKV WEB-DL 1080P", "magnet": "magnet:?xt=urn:btih:..." },
+    { "label": "DOWNLOAD TORRENT LEGENDADO 5.1 MKV WEB-DL 720P", "magnet": "magnet:?xt=urn:btih:..." }
   ],
   "filtered": {
     "720p": [
-      { "label": "Dual Audio 720p", "magnet": "magnet:?xt=urn:btih:..." }
+      { "label": "DOWNLOAD TORRENT LEGENDADO 5.1 MKV WEB-DL 720P", "magnet": "magnet:?xt=urn:btih:..." }
     ],
     "1080p": [
-      { "label": "Dual Audio 1080p", "magnet": "magnet:?xt=urn:btih:..." }
-    ]
+      { "label": "DOWNLOAD TORRENT DUBLADO DUAL AUDIO 5.1 MKV WEB-DL 1080P", "magnet": "magnet:?xt=urn:btih:..." }
+    ],
+    "2160p": []
   }
 }
 ```
@@ -67,7 +70,7 @@ O serviço segue os princípios 12-Factor; toda configuração é feita por vari
 | `PORT` | `8080` | Porta do servidor HTTP |
 | `RATE_LIMIT` | `10` | Requisições por minuto por IP |
 | `ALLOWED_ORIGINS` | `*` | Origens permitidas no CORS |
-| `ALLOWED_HOSTS` | `apachetorrent.com` | Hosts que a API pode buscar (SSRF) |
+| `ALLOWED_HOSTS` | `apachetorrents.com,apachetorrent.com` | Hosts que a API pode buscar (SSRF); configure os sites que você quer extrair |
 | `TRUSTED_PROXIES` | *(vazio)* | CIDRs de proxies reversos para confiar em `X-Forwarded-For` |
 
 ### Rodando com Docker
@@ -81,7 +84,7 @@ A imagem final pesa ~10 MB e executa com `GOMEMLIMIT` configurado para evitar OO
 
 ## Segurança
 
-- **SSRF:** só hosts em `ALLOWED_HOSTS` são aceitos, e destinos que resolvem para redes privadas/loopback/link-local são bloqueados antes da busca.
+- **SSRF:** só hosts em `ALLOWED_HOSTS` são aceitos, destinos que resolvem para redes privadas/loopback/link-local são bloqueados antes da busca, e redirecionamentos cross-host só são seguidos para hosts também autorizados.
 - **Rate limit:** `X-Forwarded-For` só é honrado quando o proxy está em `TRUSTED_PROXIES`; caso contrário, o cabeçalho é ignorado para evitar bypass por spoofing.
 - **Erros:** erros técnicos são logados no servidor (JSON estruturado via `log/slog`) e mensagens genéricas vão para o cliente.
 
